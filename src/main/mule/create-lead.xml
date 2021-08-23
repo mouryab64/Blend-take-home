@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd">
+	
+	<sub-flow name="create-lead-salesforce" doc:id="9552cf77-b50c-4ff1-9339-5d0b063db221" >
+				<logger level="DEBUG" doc:name="Logger" doc:id="f23a67e0-580f-47be-97ea-8617abe46069" message="#[flow.name] started for Id #[correlationId]"/>
+		<ee:transform doc:name="Transform to create record in salesforce" doc:id="556c1ffa-9845-4f40-b5fc-0c0dc625174b">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/java
+---
+[{
+  "FirstName": vars.firstName,
+  "LastName": vars.lastName,
+  "Company": "Take Home Challenge Inc.",
+  "Status": "Working Contacted",
+  "Description": vars.loanId
+}]]]></ee:set-payload>
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="errorMessage" ><![CDATA[%dw 2.0
+output application/java
+---
+"Error While Creating Lead in Salesforce"]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<salesforce:create type="Lead" doc:name="Create lead in salesforce" doc:id="3d4f0277-0b6d-41f9-9bfb-c0b9306d6481" config-ref="Salesforce_Config" />
+		<set-variable value="#[payload.id[0]]" doc:name="leadId" doc:id="8655d0f0-ac4e-4d74-9bef-94bd978d780d" variableName="leadId"/>
+			<logger level="DEBUG" doc:name="Logger" doc:id="3edb9a06-f2b5-495a-95e3-ab04a7187ee3" message="#[flow.name] ended for Id #[correlationId]"/>
+	</sub-flow>
+</mule>

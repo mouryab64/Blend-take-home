@@ -1,0 +1,96 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<types:mule xmlns:types="http://www.mulesoft.org/schema/mule/types">
+  <types:catalog>
+    <types:type name="loan-app-input" format="json">
+      <types:shape format="weave" example="examples/loan-application-data-input.json"><![CDATA[%dw 2.0
+
+type loan_app_input = {|
+  referrerEmail: String, 
+  party: {|
+    name: {|
+      firstName: String, 
+      lastName: String
+    |}, 
+    email: String, 
+    homePhone: String, 
+    dateOfBirth: String, 
+    currentAddress: {|
+      streetAddressLine1: String, 
+      city: String, 
+      state: String, 
+      zipCode: String
+    |}
+  |}, 
+  loanType: String, 
+  loanPurposeType: String, 
+  loanAmount: String, 
+  propertyValue: String, 
+  propertyAddress: {|
+    streetAddressLine1: String, 
+    city: String, 
+    state: String, 
+    zipCode: String
+  |}, 
+  sendEmailInvite: String
+|} {"example": "{\\\"referrerEmail\\\":\\\"jake@blend.com\\\",\\\"party\\\":{\\\"name\\\":{\\\"firstName\\\":\\\"BorrowerFirst\\\",\\\"lastName\\\":\\\"BorrowerLast\\\"},\\\"email\\\":\\\"youremail@domain.com\\\",\\\"homePhone\\\":\\\"111-222-3344\\\",\\\"dateOfBirth\\\":\\\"1990-01-01\\\",\\\"currentAddress\\\":{\\\"streetAddressLine1\\\":\\\"415 Kearny St\\\",\\\"city\\\":\\\"San Francisco\\\",\\\"state\\\":\\\"CA\\\",\\\"zipCode\\\":\\\"94108\\\"}},\\\"loanType\\\":\\\"MORTGAGE\\\",\\\"loanPurposeType\\\":\\\"PURCHASE\\\",\\\"loanAmount\\\":\\\"500000\\\",\\\"propertyValue\\\":\\\"750000\\\",\\\"propertyAddress\\\":{\\\"streetAddressLine1\\\":\\\"500 Pine St\\\",\\\"city\\\":\\\"San Francisco\\\",\\\"state\\\":\\\"CA\\\",\\\"zipCode\\\":\\\"94109\\\"},\\\"sendEmailInvite\\\":\\\"false\\\"}"}
+
+]]></types:shape>
+    </types:type>
+    <types:type name="post-home-lending-app" format="json">
+      <types:shape format="weave" example="post-home-lending-app.json"><![CDATA[%dw 2.0
+
+type post_home_lending_app = {|
+  applicationSource: {|
+    "type": String, 
+    name: String
+  |}, 
+  loanPurposeType: String, 
+  loanAmount: String, 
+  party: {|
+    currentAddress: {|
+      city: String, 
+      state: String, 
+      streetAddressLine1: String, 
+      zipCode: String
+    |}, 
+    email: String, 
+    dateOfBirth: String, 
+    homePhone: String, 
+    name: {|
+      firstName: String, 
+      lastName: String
+    |}
+  |}, 
+  property: {|
+    address: {|
+      city: String, 
+      state: String, 
+      streetAddressLine1: String, 
+      zipCode: String
+    |}, 
+    value: String
+  |}, 
+  sendEmailInvite: String, 
+  solutionSubType: String
+|} {"example": "{\\\"applicationSource\\\":{\\\"type\\\":\\\"CRM\\\",\\\"name\\\":\\\"Take Home\\\"},\\\"loanPurposeType\\\":\\\"PURCHASE\\\",\\\"loanAmount\\\":\\\"500000\\\",\\\"party\\\":{\\\"currentAddress\\\":{\\\"city\\\":\\\"San Francisco\\\",\\\"state\\\":\\\"CA\\\",\\\"streetAddressLine1\\\":\\\"415 Kearny St\\\",\\\"zipCode\\\":\\\"94108\\\"},\\\"email\\\":\\\"youremail@domain.com\\\",\\\"dateOfBirth\\\":\\\"1990-01-01\\\",\\\"homePhone\\\":\\\"111-222-3344\\\",\\\"name\\\":{\\\"firstName\\\":\\\"BorrowerFirst\\\",\\\"lastName\\\":\\\"BorrowerLast\\\"}},\\\"property\\\":{\\\"address\\\":{\\\"city\\\":\\\"San Francisco\\\",\\\"state\\\":\\\"CA\\\",\\\"streetAddressLine1\\\":\\\"500 Pine St\\\",\\\"zipCode\\\":\\\"94109\\\"},\\\"value\\\":\\\"750000\\\"},\\\"sendEmailInvite\\\":\\\"false\\\",\\\"solutionSubType\\\":\\\"MORTGAGE\\\"}"}
+
+]]></types:shape>
+    </types:type>
+  </types:catalog>
+  <types:enrichment select="#171ac829-da0b-4d04-8fb5-d4a6ada8cb00">
+    <types:processor-declaration>
+      <types:input-event>
+        <types:message>
+          <types:payload type="loan-app-input"/>
+        </types:message>
+      </types:input-event>
+      <types:output-event>
+        <types:message>
+          <types:payload type="post-home-lending-app"/>
+        </types:message>
+      </types:output-event>
+    </types:processor-declaration>
+  </types:enrichment>
+  <types:enrichment select="#c38ae58a-4c74-4df0-9b5f-4dbbef1ebf19"/>
+  <types:enrichment select="#8140b7d7-5926-4190-b534-c2d3e5d320e6"/>
+</types:mule>

@@ -1,0 +1,29 @@
+{
+"referrerEmail": "jake@blend.com",
+"party": {
+"name": {
+"firstName": "BorrowerFirst",
+"lastName": "BorrowerLast"
+},
+"email": "youremail@domain.com",
+"homePhone": "111-222-3344",
+"dateOfBirth": "1990-01-01",
+"currentAddress": {
+"streetAddressLine1": "415 Kearny St",
+"city": "San Francisco",
+"state": "CA",
+"zipCode": "94108"
+}
+},
+"loanType": "MORTGAGE",
+"loanPurposeType": "PURCHASE",
+"loanAmount": "500000",
+"propertyValue": "750000",
+"propertyAddress": {
+"streetAddressLine1": "500 Pine St",
+"city": "San Francisco",
+"state": "CA",
+"zipCode": "94109"
+},
+"sendEmailInvite": "false"
+}

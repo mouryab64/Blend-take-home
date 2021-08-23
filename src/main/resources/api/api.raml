@@ -1,0 +1,26 @@
+#%RAML 1.0
+title: blend-system-service
+version: v1
+baseUri: https://blend-system-service.cloudhub.io/{version}
+protocols:  [ HTTPS ]
+mediaType:  [ application/json ]
+
+/loan:
+  /applications:
+      post:  
+        description: Create a new loan application in Blend     
+        body: 
+          application/json:
+            example: !include examples/loanApplicationRequest.json
+        responses:
+          200:
+            description: Loan application created successfully      
+            body:
+              application/json:
+                example: !include examples/loanApplicationResponse.json
+          503:
+            description: Failed to create Loan application      
+            body:
+              application/json:
+                example: { message: "An Error Occured", exception: "HTTP Error" }
+

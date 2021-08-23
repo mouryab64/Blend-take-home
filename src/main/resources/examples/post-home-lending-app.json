@@ -1,0 +1,34 @@
+{
+  "applicationSource": {
+    "type": "CRM",
+    "name": "Take Home"
+  },
+  "loanPurposeType": "PURCHASE",
+  "loanAmount": "500000",
+  "party": {
+    "currentAddress": {
+      "city": "San Francisco",
+      "state": "CA",
+      "streetAddressLine1": "415 Kearny St",
+      "zipCode": "94108"
+    },
+    "email": "youremail@domain.com",
+    "dateOfBirth": "1990-01-01",
+    "homePhone": "111-222-3344",
+    "name": {
+      "firstName": "BorrowerFirst",
+      "lastName": "BorrowerLast"
+    }
+  },
+  "property": {
+    "address": {
+      "city": "San Francisco",
+      "state": "CA",
+      "streetAddressLine1": "500 Pine St",
+      "zipCode": "94109"
+    },
+    "value": "750000"
+  },
+  "sendEmailInvite": "false",
+  "solutionSubType": "MORTGAGE"
+}

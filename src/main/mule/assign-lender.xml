@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd 
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd">
+<sub-flow name="assign_loan_to_lender" doc:id="f30d0301-76dd-4c3b-a837-5a81dcded646" >
+			<logger level="DEBUG" doc:name="Logger" doc:id="907f7d27-a838-40aa-940e-54894b429729" message="#[flow.name] started for Id #[correlationId]"/>
+		<ee:transform doc:name="Transform to assign loan to lendor" doc:id="8abc4b25-38e9-4e93-bc5e-b7abe463df56" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	assignees: [{
+		"userId" : vars.lenderId
+	}]
+}]]></ee:set-payload>
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="errorMessage" ><![CDATA[%dw 2.0
+output application/java
+---
+"Error While Requesting to assign Loan"]]></ee:set-variable>
+			</ee:variables>
+		
+</ee:transform>
+		<http:request method="PUT" doc:name="Request to assign loan" doc:id="3970b73d-2a49-4baf-891a-9ffbec18ed2e" config-ref="HTTP_Blend_API_Request_configuration" path="/home-lending/applications/{loanId}/assignees">
+			<http:headers ><![CDATA[#[output application/java
+---
+{
+	"blend-target-instance" : "${blend.api.target.instance}",
+	"Authorization" : "${secure::blend.auth.token}",
+	"Content-Type" : "application/json",
+	"blend-api-version" : "${blend.api.version}"
+}]]]></http:headers>
+			<http:uri-params ><![CDATA[#[output application/java
+---
+{
+	"loanId" : vars.loanId
+}]]]></http:uri-params>
+			<http:query-params ><![CDATA[#[output application/java
+---
+{
+	"autoAssignLoanTeam" : "true"
+}]]]></http:query-params>
+		</http:request>
+				<logger level="DEBUG" doc:name="Logger" doc:id="0c687738-aa61-4593-9eb0-1e51108b302f" message="#[flow.name] ended for Id #[correlationId]"/>
+		
+	</sub-flow>
+	<sub-flow name="lookup_lender_id" doc:id="5319c2cc-3550-413c-a184-c353c02e4870" >
+			<logger level="DEBUG" doc:name="Logger" doc:id="c1fb9bf1-2141-4f81-b628-166fe7034ff6" message="#[flow.name] started for Id #[correlationId]"/>
+		<set-variable value="Error While looking up Lender ID" doc:name="Set errorMessage" doc:id="d216a55e-d68c-4c48-ae40-815429367c95" variableName="errorMessage"/>
+		<ee:cache doc:name="Cache" doc:id="fa903050-0797-4a3d-bf35-88362f2f5e0c" cachingStrategy-ref="LenderId_Caching_Strategy">
+			<http:request method="GET" doc:name="Request to lookup lender id" doc:id="46d50132-7bee-44ea-b090-2ec17e093dc6" config-ref="HTTP_Blend_API_Request_configuration" path="/lenders">
+			<http:headers><![CDATA[#[output application/java
+---
+{
+	"blend-target-instance" : "${blend.api.target.instance}",
+	"Authorization" : "${secure::blend.auth.token}",
+	"Content-Type" : "application/json",
+	"blend-api-version" : "${blend.api.version}"
+}]]]></http:headers>
+			<http:query-params><![CDATA[#[output application/java
+---
+{
+	"emails" : vars.referralEmail
+}]]]></http:query-params>
+		</http:request>
+		</ee:cache>
+		<ee:transform doc:name="Retrieve Lender Id" doc:id="03de9fab-fa67-46aa-b66a-b55f227999ad" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="lenderId" ><![CDATA[%dw 2.0
+output application/java
+---
+payload.success[0].id]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+				<logger level="DEBUG" doc:name="Logger" doc:id="124c23a4-1787-4fb4-a8a7-ae2ceccf5807" message="#[flow.name] ended for Id #[correlationId]"/>
+		
+	</sub-flow></mule>

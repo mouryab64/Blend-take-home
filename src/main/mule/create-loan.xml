@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd">
+	<flow name="Create_loan_application" doc:id="e1119728-c971-472f-aeca-acacf363277d" >
+		<logger level="DEBUG" doc:name="Logger" doc:id="2090c463-9fc8-4269-9627-876ed2527436" message="#[flow.name] started for Id #[correlationId]"/>
+		<flow-ref doc:name="create_loan_request" doc:id="0c24266f-f77f-4790-8398-8b530e4196ec" name="create_loan_request"/>
+		<flow-ref doc:name="lookup_lender_id" doc:id="7e7bfff3-a568-43d3-a61a-67e5f7e5ebef" name="lookup_lender_id"/>
+		<flow-ref doc:name="assign_loan_to_lender" doc:id="16b900f6-c522-44b5-8f0e-8778721d455b" name="assign_loan_to_lender"/>
+		<flow-ref doc:name="create-lead-salesforce" doc:id="a50fcc26-5ce3-4e4d-ac92-fa2f1a1f541a" name="create-lead-salesforce"/>
+		<flow-ref doc:name="Set_output_json" doc:id="d1dcb626-9793-4688-b203-f67f4f1d892f" name="Set_output_json"/>
+		<logger level="DEBUG" doc:name="Logger" doc:id="c15867c0-199e-464c-9b32-b8ec432b774d" message="#[flow.name] ended for Id #[correlationId]"/>
+		<error-handler >
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="a7cbfded-fb51-4670-8d3a-003566d90d61" >
+				<logger level="ERROR" doc:name="Logger" doc:id="8b5d7ec0-60f2-4796-8819-0cb25baafd85" message="#[error.description]" />
+				<ee:transform doc:name="Transform Message" doc:id="53eda097-203a-4a2d-a0d1-4064b9c1858a">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	message: vars.errorMessage,
+	exception: error.description
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</on-error-propagate>
+		</error-handler>
+	
+</flow>
+	
+	<sub-flow name="Set_output_json" doc:id="39d8be50-d614-4211-ad8f-4c45b8018d80" >
+			<logger level="DEBUG" doc:name="Logger" doc:id="67137071-5f08-4803-8291-feca7edea4e5" message="#[flow.name] started for Id #[correlationId]"/>
+		<ee:transform doc:name="Set output Json" doc:id="e4956b93-dc82-4eaa-9f8b-8aefb8e42ed0">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+  "loanId": vars.loanId,
+  "lenderId": vars.lenderId,
+  "leadId": vars.leadId
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+				<logger level="DEBUG" doc:name="Logger" doc:id="483dfbef-cfae-44e0-894c-5a4311781dbd" message="#[flow.name] ended for Id #[correlationId]"/>
+	</sub-flow>
+	<sub-flow name="create_loan_request" doc:id="5a0737d0-3d76-49ed-93e7-6fcc5eb1d7f3" >
+				<logger level="DEBUG" doc:name="Logger" doc:id="36dac244-78e6-4b27-9fce-079db3cc7ef3" message="#[flow.name] started for Id #[correlationId]"/>
+		<ee:transform doc:name="Transform_to_create_loan_request" doc:id="171ac829-da0b-4d04-8fb5-d4a6ada8cb00">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	applicationSource: {
+		"type": "CRM",
+		name: "Take Home Inc."
+	},
+	loanPurposeType: payload.loanPurposeType,
+	loanAmount: payload.loanAmount,
+	party: {
+		currentAddress: {
+			city: payload.party.currentAddress.city,
+			state: payload.party.currentAddress.state,
+			streetAddressLine1: payload.party.currentAddress.streetAddressLine1,
+			zipCode: payload.party.currentAddress.zipCode
+		},
+		email: payload.party.email,
+		dateOfBirth: payload.party.dateOfBirth,
+		homePhone: payload.party.homePhone,
+		name: {
+			firstName: payload.party.name.firstName,
+			lastName: payload.party.name.lastName
+		}
+	},
+	property: {
+		address: {
+			city: payload.propertyAddress.city,
+			state: payload.propertyAddress.state,
+			streetAddressLine1: payload.propertyAddress.streetAddressLine1,
+			zipCode: payload.propertyAddress.zipCode
+		},
+		value: payload.propertyValue
+	},
+	sendEmailInvite: payload.sendEmailInvite,
+	solutionSubType: payload.loanType
+}]]></ee:set-payload>
+			</ee:message>
+			<ee:variables>
+				<ee:set-variable variableName="referralEmail"><![CDATA[%dw 2.0
+output application/java
+---
+payload.referrerEmail]]></ee:set-variable>
+				<ee:set-variable variableName="firstName" ><![CDATA[%dw 2.0
+output application/java
+---
+payload.party.name.firstName]]></ee:set-variable>
+				<ee:set-variable variableName="lastName" ><![CDATA[%dw 2.0
+output application/java
+---
+payload.party.name.lastName]]></ee:set-variable>
+				<ee:set-variable variableName="errorMessage" ><![CDATA[%dw 2.0
+output application/java
+---
+"Error while creating Loan application in Blend"]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<http:request method="POST" doc:name="Request to create Loan request" doc:id="5ee7c93d-ee9b-4f5a-8958-5f4f17fb8bf8" config-ref="HTTP_Blend_API_Request_configuration" path="/home-lending/applications">
+			<http:headers ><![CDATA[#[output application/java
+---
+{
+	"blend-target-instance" : "${blend.api.target.instance}",
+	"Authorization" : "${secure::blend.auth.token}",
+	"Content-Type" : "application/json",
+	"blend-api-version" : "${blend.api.version}"
+}]]]></http:headers>
+		</http:request>
+		<ee:transform doc:name="Retrieve Loan Id" doc:id="c38ae58a-4c74-4df0-9b5f-4dbbef1ebf19" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="loanId" ><![CDATA[%dw 2.0
+output application/java
+---
+payload.id]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+				<logger level="DEBUG" doc:name="Logger" doc:id="9bf38a49-6308-4011-9613-7eeb81bc2ae1" message="#[flow.name] ended for Id #[correlationId]"/>
+		
+	</sub-flow>
+</mule>

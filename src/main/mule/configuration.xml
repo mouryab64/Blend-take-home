@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit"
+	xmlns:secure-properties="http://www.mulesoft.org/schema/mule/secure-properties"
+	xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd 
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd 
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd
+http://www.mulesoft.org/schema/mule/secure-properties http://www.mulesoft.org/schema/mule/secure-properties/current/mule-secure-properties.xsd">
+<http:request-config name="HTTP_Blend_API_Request_configuration" doc:name="HTTP Request configuration" doc:id="53451ac1-6929-4997-a532-4e4aa4f9c868">
+		<http:request-connection protocol="HTTPS" host="${blend.api.host}" />
+	</http:request-config>
+	<salesforce:sfdc-config name="Salesforce_Config" doc:name="Salesforce Config" doc:id="317143f8-b832-4e7e-a2ca-bbbe2ac83f46" >
+		<salesforce:basic-connection username="${salesforce.username}" password="${secure::salesforce.password}" securityToken="${secure::salesforce.security.token}" url="${salesforce.auth.url}"/>
+	</salesforce:sfdc-config>
+	<http:listener-config name="HTTP_API_Listener_config" doc:name="HTTP Listener config" doc:id="d87f84a3-2ff8-495a-aff8-c1e8df05ca9b" >
+		<http:listener-connection host="0.0.0.0" port="${local.port}" />
+	</http:listener-config>
+	<ee:object-store-caching-strategy name="LenderId_Caching_Strategy" doc:name="Caching Strategy" doc:id="3cec654c-6b82-42ae-aa6c-5ac2d3aedfc8" keyGenerationExpression="#[vars.referralEmail]" />
+	<configuration-properties doc:name="Configuration properties" doc:id="19f54995-570b-4927-88ec-5626c7e41e58" file="application.${env}.properties" />
+<global-property doc:name="default mule.env" doc:id="b8842043-3b3f-4578-be41-5f9c631371cd" name="env" value="dev" />
+	<global-property doc:name="default mule.encryption.key" doc:id="2009f7bf-a19b-40e8-a183-ff869e3fefbd" name="mule.encryption.key" value="C8z7yVUJ" />
+<secure-properties:config name="Secure_Properties_Config" doc:name="Environment-specific Secure Properties Config" doc:id="1063a986-6e09-49ae-902a-76f34e137fa3" 
+	file="secure.${env}.properties" key="${mule.encryption.key}" >
+		<secure-properties:encrypt algorithm="Blowfish" />
+	</secure-properties:config>     	
+	   <apikit:config name="api-config" api="api.raml" outboundHeadersMapName="outboundHeaders" httpStatusVarName="httpStatus" />
+	
+</mule>
